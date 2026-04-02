@@ -1,24 +1,49 @@
-import logo from './logo.svg';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+
+import Login from "./pages/Login";              // 👈 NEW
+import Register from "./pages/Register";
+import SystemCheck from "./pages/SystemCheck";
+import ResetPassword from "./pages/ResetPassword";
+import CandidateDashboard from "./components/CandidateDashboard";
+
+import AdminDashboard from "./components/AdminDashboard";
+import AdminDetail from "./pages/AdminDetail";
 
 function App() {
+
+  const role = localStorage.getItem("role");
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+
+      <Routes>
+
+        {/* 👇 Default page = LOGIN */}
+        <Route path="/" element={<Login />} />
+
+        {/* 👇 New user register */}
+        <Route path="/register" element={<Register />} />
+
+        {/* 👇 Flow */}
+        <Route path="/system-check" element={<SystemCheck />} />
+        <Route path="/candidate" element={<CandidateDashboard />} />
+         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        {/* 👇 Admin */}
+        <Route
+          path="/admin"
+          element={role === "admin" ? <AdminDashboard /> : <Login />}
+        />
+
+        <Route
+          path="/admin/:id"
+          element={role === "admin" ? <AdminDetail /> : <Login />}
+        />
+
+      </Routes>
+
+    </Router>
   );
 }
 
