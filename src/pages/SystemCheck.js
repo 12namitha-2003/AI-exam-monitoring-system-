@@ -12,7 +12,9 @@ function SystemCheck() {
   const [mic, setMic] = useState(false);
   const [tabSwitch, setTabSwitch] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [error, setError] = useState("");
 
+  // ================= INIT =================
   useEffect(() => {
     startSystemCheck();
 
@@ -20,7 +22,7 @@ function SystemCheck() {
     const handleVisibility = () => {
       if (document.hidden) {
         setTabSwitch(true);
-        alert("❌ Tab switching is not allowed during the exam!");
+        alert("❌ Tab switching is not allowed!");
       }
     };
 
@@ -45,9 +47,21 @@ function SystemCheck() {
 
       setCamera(true);
       setMic(true);
+      setError("");
+
+      // 🔥 Detect if user turns OFF camera/mic later
+      stream.getTracks().forEach(track => {
+        track.onended = () => {
+          setCamera(false);
+          setMic(false);
+          alert("⚠ Camera or Microphone turned OFF!");
+        };
+      });
 
     } catch (error) {
-      alert("⚠ Please allow camera & microphone access!");
+      setCamera(false);
+      setMic(false);
+      setError("⚠ Camera & Microphone access is required!");
     }
   };
 
@@ -63,12 +77,12 @@ function SystemCheck() {
   const handleStartExam = async () => {
 
     if (!agreed) {
-      alert("Please accept instructions before starting!");
+      alert("❌ Please accept instructions!");
       return;
     }
 
     if (tabSwitch) {
-      alert("❌ Tab switching detected. Exam blocked!");
+      alert("❌ Tab switching detected!");
       return;
     }
 
@@ -85,10 +99,12 @@ function SystemCheck() {
       }
 
       stopCamera();
-      navigate("/exam");
+
+      // 👉 change route if needed
+      navigate("/aptitude");
 
     } catch (err) {
-      alert("Fullscreen permission required!");
+      alert("❌ Fullscreen permission required!");
     }
   };
 
@@ -97,24 +113,27 @@ function SystemCheck() {
 
       <h2 style={{ textAlign: "center" }}>System Check & Instructions</h2>
 
-      {/* ================= GENERAL INSTRUCTIONS ================= */}
+      {/* ================= ERROR ================= */}
+      {error && (
+        <p style={{ color: "red", fontWeight: "bold" }}>{error}</p>
+      )}
+
+      {/* ================= GENERAL ================= */}
       <h3>📘 General Instructions</h3>
       <ul>
-        <li>Read all questions carefully before answering</li>
-        <li>Do not refresh or close the browser during the exam</li>
-        <li>Ensure a stable internet connection</li>
-        <li>Each question carries marks as specified</li>
-        <li>You can change answers before final submission</li>
+        <li>Read all questions carefully</li>
+        <li>Do not refresh or close browser</li>
+        <li>Ensure stable internet</li>
+        <li>Answer all questions</li>
       </ul>
 
-      {/* ================= STRICT RULES ================= */}
+      {/* ================= STRICT ================= */}
       <h3>🚫 Strict Rules</h3>
       <ul>
-        <li>No tabs other than the exam tab should be open</li>
-        <li>Switching tabs will be detected and may terminate the exam</li>
-        <li>Camera must remain ON at all times</li>
-        <li>Microphone must remain ON at all times</li>
-        <li>Fullscreen mode is mandatory</li>
+        <li>No tab switching</li>
+        <li>Camera must stay ON</li>
+        <li>Microphone must stay ON</li>
+        <li>Fullscreen is mandatory</li>
       </ul>
 
       {/* ================= AGREEMENT ================= */}
@@ -124,14 +143,14 @@ function SystemCheck() {
           checked={agreed}
           onChange={() => setAgreed(!agreed)}
         />
-        {" "}I agree to follow all instructions and rules
+        {" "}I agree to all instructions
       </div>
 
       {/* ================= STATUS ================= */}
       <h3 style={{ marginTop: "20px" }}>⚙ System Status</h3>
       <p>📷 Camera: {camera ? "✅ ON" : "❌ OFF"}</p>
       <p>🎤 Microphone: {mic ? "✅ ON" : "❌ OFF"}</p>
-      <p>🛑 Tab Status: {tabSwitch ? "❌ VIOLATION DETECTED" : "✅ OK"}</p>
+      <p>🛑 Tab Status: {tabSwitch ? "❌ VIOLATION" : "✅ OK"}</p>
 
       <br />
 
@@ -153,14 +172,15 @@ function SystemCheck() {
       {/* ================= START BUTTON ================= */}
       <button
         onClick={handleStartExam}
+        disabled={!camera || !mic || !agreed}
         style={{
           padding: "12px 25px",
-          background: "green",
+          background: (!camera || !mic || !agreed) ? "gray" : "green",
           color: "white",
           border: "none",
           borderRadius: "5px",
           fontWeight: "bold",
-          cursor: "pointer"
+          cursor: (!camera || !mic || !agreed) ? "not-allowed" : "pointer"
         }}
       >
         Start Exam

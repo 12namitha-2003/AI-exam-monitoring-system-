@@ -1,10 +1,14 @@
-
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 function Register() {
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // ✅ Get examId from URL
+  const queryParams = new URLSearchParams(location.search);
+  const examId = queryParams.get("examId");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -28,6 +32,7 @@ function Register() {
     });
   };
 
+  // ================= SEND OTP =================
   const sendOtp = async () => {
     if (!formData.email) {
       alert("Enter email first!");
@@ -48,11 +53,11 @@ function Register() {
       setOtpSent(true);
 
     } catch (error) {
-      console.log(error);
       alert("Error sending OTP");
     }
   };
 
+  // ================= VERIFY OTP =================
   const verifyOtp = async () => {
     try {
       const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
@@ -76,11 +81,11 @@ function Register() {
       }
 
     } catch (error) {
-      console.log(error);
       alert("Error verifying OTP");
     }
   };
 
+  // ================= REGISTER =================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -112,13 +117,20 @@ function Register() {
 
       if (res.ok) {
         alert("Registration Successful 🎉");
-        navigate("/");
+
+        // ✅ Store examId (VERY IMPORTANT)
+        if (examId) {
+          localStorage.setItem("examId", examId);
+        }
+
+        // ✅ Go to system check (not login)
+        navigate("/system-check");
+
       } else {
         alert(data.message);
       }
 
     } catch (error) {
-      console.log(error);
       alert("Error registering");
     }
   };
@@ -221,76 +233,4 @@ function Register() {
     </div>
   );
 }
-
-const containerStyle = {
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  height: "100vh",
-  background: "#f4f6f9"
-};
-
-const formStyle = {
-  background: "white",
-  padding: "30px",
-  borderRadius: "10px",
-  width: "400px",
-  boxShadow: "0 0 15px rgba(0,0,0,0.2)"
-};
-
-const inputStyle = {
-  width: "100%",
-  height: "45px",
-  padding: "0 12px",
-  margin: "10px 0",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-  boxSizing: "border-box"
-};
-
-const buttonStyle = {
-  width: "100%",
-  padding: "10px",
-  background: "#2196F3",
-  color: "white",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-  fontWeight: "bold"
-};
-
-const otpButtonStyle = {
-  position: "absolute",
-  right: "8px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  height: "30px",
-  padding: "0 12px",
-  background: "#4CAF50",
-  color: "white",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-  fontSize: "12px"
-};
-
-const verifyButtonStyle = {
-  padding: "0 12px",
-  background: "#4CAF50",
-  color: "white",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer"
-};
-
-const toggleStyle = {
-  position: "absolute",
-  right: "10px",
-  top: "50%",
-  transform: "translateY(-50%)",
-  cursor: "pointer",
-  color: "blue",
-  fontSize: "14px"
-};
-
 export default Register;
